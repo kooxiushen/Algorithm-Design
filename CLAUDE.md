@@ -14,11 +14,11 @@ The repo is currently in **planning phase**. No real source code exists yet — 
 
 ## The 7 programs that must exist
 
-| Program | Purpose |
-|---|---|
-| `dataset_generator` | Produces `dataset_<n>.csv` with n unique random `(10-digit int, 5-letter string)` rows |
-| `radix_sort` / `radix_sort_step` | LSD radix sort by integer key, base 10. `_step` traces the array after each digit pass |
-| `heap_sort` / `heap_sort_step` | Maxheap, in-place. `_step` traces after each extract-max swap |
+| Program                                        | Purpose                                                                                                                       |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `dataset_generator`                            | Produces `dataset_<n>.csv` with n unique random `(10-digit int, 5-letter string)` rows                                        |
+| `radix_sort` / `radix_sort_step`               | LSD radix sort by integer key, base 10. `_step` traces the array after each digit pass                                        |
+| `heap_sort` / `heap_sort_step`                 | Maxheap, in-place. `_step` traces after each extract-max swap                                                                 |
 | `hash_table_search` / `hash_table_search_step` | Open-addressing hash table with linear probing. Full version times n searches (best/avg/worst); `_step` traces one probe path |
 
 Output filenames are dictated by the PDF and **must match exactly** (see `planning_docs/CCP6214_Assignment.pdf` §D and `sample/results/` for examples).
@@ -28,7 +28,7 @@ Output filenames are dictated by the PDF and **must match exactly** (see `planni
 - **No library sort/search**: no `std::sort`, `std::binary_search`, `std::find`, `std::lower_bound`, etc.
 - **No STL containers that sort/search internally**: no `std::set`, `std::map`, `std::unordered_set`, `std::unordered_map`, `std::priority_queue`.
 - Allowed: `std::vector`, `std::array`, `std::string`, `std::chrono`, `<random>`, file streams.
-- **Timing excludes I/O.** Wrap *only* the algorithm call with `std::chrono::high_resolution_clock` — read CSV before the timer starts, write output after it stops. See the pattern in `sample/src/radix_sort.cpp`.
+- **Timing excludes I/O.** Wrap _only_ the algorithm call with `std::chrono::high_resolution_clock` — read CSV before the timer starts, write output after it stops. See the pattern in `sample/src/radix_sort.cpp`.
 - **RNG seed = group leader's student ID** mapped via the letter table in `planning_pro.md` §11. All randomness in `dataset_generator` must use this seed; the seed is set immediately after `main()` starts.
 - **Step output format must match the PDF samples byte-for-byte.** Targets are in `sample/results/dataset_1000_*_step_*.txt`.
 
