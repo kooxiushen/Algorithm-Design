@@ -132,6 +132,10 @@ Each algorithm is owned end-to-end by one member: code, step variant, complexity
 
 ## 4. Algorithm Implementation Notes
 
+> **What are the `_step` programs?**
+> The `_step` variant of each algorithm runs the **exact same algorithm** as the full version, but instead of writing sorted output, it **traces the algorithm step-by-step into a `.txt` file** for visual inspection. The tutor uses these traces to verify your algorithm logic is correct. Only rows in the `[start_row, end_row]` range are printed.
+> Two options for code reuse: (a) put the algorithm in a header with an optional "trace" callback, called from both `.cpp` files; (b) duplicate the algorithm code in the `_step.cpp` and add print statements. At this scale, either is fine.
+
 ### 4.1 Radix Sort (LSD, base 10)
 - Sort the records by the 10-digit **integer key only** (string is payload).
 - 10 passes (one per digit, rightmost first). Use 10 buckets per pass.
@@ -199,16 +203,58 @@ Cover: time complexity (both O(log n) for search/insert/delete on balanced tree,
 
 **Rubric note:** to score "Excellent" on dataset generation, integer range must be ≥10-million OR smaller-than-max but runtime ≥6h for the algorithm using this input. Pick top-2 sizes so radix vs heap runtimes **differ by at least 60 seconds** at the largest.
 
-### Timing rules
-- Read CSV into memory **before** starting the timer.
-- Start timer → call algorithm → stop timer.
-- Write output **after** stopping the timer.
-- Use `std::chrono::high_resolution_clock`; report in seconds with 3+ decimals.
+### Expected file sizes (plan OneDrive needs accordingly)
+
+Each CSV row ≈ 17 bytes (`1000000038,uoren\n`). Approximate disk usage:
+
+| Rows | Approx CSV size | Approx RAM (Record struct ~16B) |
+|---|---|---|
+| 1,000 | 17 KB | 16 KB |
+| 1,000,000 | 17 MB | 16 MB |
+| 10,000,000 | 170 MB | 160 MB |
+| 100,000,000 | 1.7 GB | 1.6 GB |
+| 1,000,000,000 | **17 GB** | **16 GB** |
+| 9,000,000,000 | **153 GB** | **144 GB** (infeasible) |
+
+→ Anything above ~5M rows likely **must** live on OneDrive, not in the zip. Anything above ~100M rows may not fit in laptop RAM at all.
+
+### Timing rules — exclude I/O
+
+The PDF requires running time to **exclude** file reading/writing. Common mistake:
+
+```cpp
+// ❌ WRONG — timer wraps I/O
+auto start = chrono::high_resolution_clock::now();
+auto data = read_csv("dataset_1000000.csv");   // file read = I/O
+radix_sort(data);
+write_csv("sorted.csv", data);                  // file write = I/O
+auto end = chrono::high_resolution_clock::now();
+```
+
+```cpp
+// ✅ CORRECT — timer wraps only the algorithm
+auto data = read_csv("dataset_1000000.csv");    // before timer
+auto start = chrono::high_resolution_clock::now();
+radix_sort(data);                                // ONLY this is timed
+auto end = chrono::high_resolution_clock::now();
+write_csv("sorted.csv", data);                   // after timer
+auto seconds = chrono::duration<double>(end - start).count();
+```
+
+Use `std::chrono::high_resolution_clock`; report in seconds with 3+ decimals. **Day 6 cross-review explicitly checks this.**
+
+### One machine per member (whole experiment)
+
+**Each member must stick to one machine for all 10 input sizes.** You can't run 1K on your laptop and 1B on a school PC — the comparison would be apples-to-oranges and the hardware screenshot wouldn't match. If your personal laptop can't reach the biggest sizes, **report your hardware's ceiling as your max** — that's still valid; the other members may go higher on their hardware.
 
 ### Per-member capture (each of the 3 members)
 - 1× hardware spec screenshot (Windows: `System Information`; Mac: About This Mac; Linux: `lscpu` + `free -h`)
 - 30+ command-prompt screenshots (3 algorithms × 10 sizes)
 - All output files (or OneDrive folder for big ones)
+
+### Handling "different hardware → results don't compare"
+
+You don't combine numbers across members. The report has **three separate result sections** — one per member, each with their hardware screenshot + their own runtime table. What should be consistent across members is the **trend** (e.g. "radix beats heap at large n"), not the absolute seconds. The rubric criterion *"Findings on algorithms on the same hardware"* means each member analyses their own hardware separately.
 
 ### Group's reported "max input size"
 Take the **minimum** across the 3 members' hardware ceilings — that's the group's reported max. Otherwise one member can't reproduce.
@@ -220,10 +266,10 @@ Take the **minimum** across the 3 members' hardware ceilings — that's the grou
 ```
 Algorithm-Design/
 ├── src/
-│   ├── common/
-│   │   ├── record.hpp           # struct Record { uint64_t key; char str[6]; }
-│   │   ├── csv_io.hpp           # read_csv() / write_csv() — NOT timed
-│   │   └── rng.hpp              # seeded mt19937_64
+│   ├── common/                    # shared helper headers (see below)
+│   │   ├── record.hpp
+│   │   ├── csv_io.hpp
+│   │   └── rng.hpp
 │   ├── dataset_generator.cpp
 │   ├── radix_sort.cpp
 │   ├── radix_sort_step.cpp
@@ -231,20 +277,62 @@ Algorithm-Design/
 │   ├── heap_sort_step.cpp
 │   ├── hash_table_search.cpp
 │   └── hash_table_search_step.cpp
-├── data/                         # generated CSVs — gitignored, on OneDrive
-├── results/                      # output .txt + screenshots — partial in repo, big on OneDrive
-├── docs/
-│   ├── report.docx
-│   └── references.bib            # APA7 sources
-├── CCP6214_Assignment.pdf
-├── PLANNING.md                   # original plan (kept for diff)
-└── planning_pro.md               # this file
+├── data/                          # generated INPUT datasets (dataset_n.csv)
+├── results/                       # OUTPUT files (sorted CSVs, step .txt, screenshots)
+├── planning_docs/
+│   ├── CCP6214_Assignment.pdf
+│   ├── PLANNING.md                # original plan (kept for diff)
+│   └── planning_pro.md            # this file
+└── report.docx                    # final report (Day 9-12)
 ```
 
-Compile each program standalone, e.g.:
+### What's in the helper header files?
+
+These exist so the same code isn't rewritten in all 7 programs:
+
+- **`record.hpp`** — the `Record` data type (the row format):
+  ```cpp
+  struct Record { uint64_t key; char str[6]; }; // 5 letters + null terminator
+  ```
+- **`csv_io.hpp`** — `read_csv(filename) → vector<Record>` and `write_csv(filename, vector<Record>)`. **These functions are called OUTSIDE the timer** (loading the data is I/O, not the algorithm).
+- **`rng.hpp`** — wraps `std::mt19937_64` seeded with the leader's student ID number, so anywhere we need randomness (dataset generation, picking search targets), it uses the same seed.
+
+You don't *have* to split into headers — you could copy-paste the same code into each `.cpp`. Headers just keep things DRY. For 3 people building 7 small programs, **headers are recommended** but not required.
+
+### Folder purposes
+
+- **`data/`** = the INPUT files (`dataset_1000.csv`, `dataset_1000000.csv`, etc.) produced by `dataset_generator`. These are what the sorts read from.
+- **`results/`** = the OUTPUT files:
+  - sorted datasets (`radix_sorted_dataset_n.csv`, `heap_sorted_dataset_n.csv`)
+  - step trace files (`dataset_n_radix_sorted_step_<start>_<end>.txt`)
+  - hash search timing (`hash_table_search_dataset_n.txt`)
+  - command-prompt screenshots
+- Both folders are **gitignored** for big sizes — they live on OneDrive instead.
+
+### File extension cheat-sheet (per the PDF spec)
+
+| Extension | Used for |
+|---|---|
+| `.csv` | Datasets — both unsorted **input** AND sorted **output** of `radix_sort` / `heap_sort` |
+| `.txt` | Step traces (`*_step_*.txt`), hash search timing summary (`hash_table_search_dataset_n.txt`) |
+| `.docx` | The final report (do NOT submit `.pdf` or `.doc`) |
+| `.cpp` | Source code only — no `.hpp` files in the deliverable zip if you keep them inline |
+
+### Compile commands (simple)
+
+If you keep each program self-contained (with helpers `#include`d as headers from `src/common/`):
+
+```bash
+g++ -std=c++17 -O2 dataset_generator.cpp -o dataset_generator
+g++ -std=c++17 -O2 radix_sort.cpp        -o radix_sort
+g++ -std=c++17 -O2 radix_sort_step.cpp   -o radix_sort_step
+g++ -std=c++17 -O2 heap_sort.cpp         -o heap_sort
+g++ -std=c++17 -O2 heap_sort_step.cpp    -o heap_sort_step
+g++ -std=c++17 -O2 hash_table_search.cpp      -o hash_table_search
+g++ -std=c++17 -O2 hash_table_search_step.cpp -o hash_table_search_step
 ```
-g++ -std=c++17 -O2 -Wall src/radix_sort.cpp src/common/*.hpp -o radix_sort
-```
+
+`-O2` matters — without optimization, runtimes are artificially slow and inconsistent.
 
 ---
 
@@ -267,7 +355,7 @@ g++ -std=c++17 -O2 -Wall src/radix_sort.cpp src/common/*.hpp -o radix_sort
 ## 8. Coordination Protocol
 
 - **GitHub repo:** code + report drafts + small outputs.
-- **OneDrive folder:** big input/output files (datasets ≥10M rows, all screenshots). Get a single shareable folder link, paste into report.
+- **OneDrive folder (MANDATORY per PDF §F.4 and §I.2):** the assignment explicitly requires a single OneDrive folder link in the document so the tutor can view big files one-by-one. Not optional. Set this up Day 1. Put all datasets ≥~5M rows, all output files, all screenshots there.
 - **Daily 15-min sync:** suggested 9pm in group chat — blockers only, not status theater. Format: "I'm doing X, blocked by Y, need Z."
 - **Async chat:** WhatsApp/Discord/whatever the group already uses.
 - **Code review:** Day 6 mandatory cross-review (A↔B, B↔C, C↔A). Informal review encouraged throughout.
@@ -366,8 +454,27 @@ Worst case time: z seconds
 ```
 
 ### Seed example
-Student ID `243UC247CT` → digits via letter map (U=1, C=3, T=2):
-`2431324730` → `srand((unsigned int)2431324730U);` or `mt19937_64 rng; rng.seed(24313247300ULL);`
+
+MMU student IDs are a mix of digits and capital letters (e.g. `243UC247CT`). To get the seed, walk the ID left-to-right and replace each letter with its mapped digit:
+
+```
+A=1 B=2 C=3 D=4 E=5 F=6 G=7 H=8 I=9 J=0
+K=1 L=2 M=3 N=4 O=5 P=6 Q=7 R=8 S=9 T=0
+U=1 V=2 W=3 X=4 Y=5 Z=6
+```
+
+Walk `243UC247CT`:
+- `2` `4` `3` `U`→1 `C`→3 `2` `4` `7` `C`→3 `T`→0 = **`2431324730`**
+
+Then in code (PDF gives both options — pick one):
+```cpp
+srand((unsigned int)2431324730U);          // older C-style
+// OR
+std::mt19937_64 rng;
+rng.seed(24313247300ULL);                  // matches PDF; note the trailing 0 — PDF example seems to use 11 digits here, not 10. Ask tutor to confirm which is intended.
+```
+
+⚠️ **Use the GROUP LEADER's ID**, not your own. Wrong seed = wrong dataset = "doesn't match what tutor expects".
 
 ---
 
