@@ -1,4 +1,21 @@
+// *********************************************************
+// Program: dataset_generator.cpp
+// Course: CCP6214 Algorithm Design and Analysis
+// Lecture Class: TC4L
+// Tutorial Class: T13L
+// Trimester: 2610
+// Member_1: 242UC244M6  | YAP HUI CHI         | YAP.HUI.CHI@STUDENT.MMU.EDU.MY        | 0163225726
+// Member_2: 243UC247CQ  | ERIC CHIN YAN HONG  | ERIC.CHIN.YAN.HONG@STUDENT.MMU.EDU.MY | 0168262342
+// Member_3: 251UC25052  | KOO XIU SHEN        | KOO.XIU.SHEN@STUDENT.MMU.EDU.MY       | 01140454502
+// *********************************************************
+//
+// Produces dataset_<n>.csv with n unique random rows.
+// Each row: <10-digit integer>,<5-letter lowercase string>
+//
 // Compile: g++ -std=c++17 -O2 dataset_generator.cpp -o dataset_generator
+// Usage:   ./dataset_generator <n>
+// Example: ./dataset_generator 1000000
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -8,7 +25,18 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    int n = atoi(argv[1]);
+    // Basic input check.
+    if (argc < 2)
+    {
+        cerr << "Usage: " << argv[0] << " <n>\n";
+        return 1;
+    }
+    long long n = atoll(argv[1]);
+    if (n <= 0)
+    {
+        cerr << "Error: n must be a positive number.\n";
+        return 1;
+    }
 
     // Seed = group leader's student ID after the letter -> digit mapping.
     // Original ID: 251UC25052
@@ -24,7 +52,7 @@ int main(int argc, char *argv[])
     // when finished, which keeps lookups fast. Value 0 means "empty".
     vector<long long> seen(2 * n + 1, 0);
 
-    while ((int)keys.size() < n)
+    while ((long long)keys.size() < n)
     {
         // Make a random 10-digit number in [1,000,000,000 .. 9,999,999,999].
         long long k = 1000000000LL + (rng() % 9000000000LL);
@@ -32,7 +60,7 @@ int main(int argc, char *argv[])
         // Check if we've seen this number before.
         // Start at position k % size, walk forward until we find an empty slot
         // or the same number.
-        int pos = k % seen.size();
+        long long pos = k % (long long)seen.size();
         bool duplicate = false;
         while (seen[pos] != 0)
         {
@@ -41,7 +69,7 @@ int main(int argc, char *argv[])
                 duplicate = true;
                 break;
             }
-            pos = (pos + 1) % seen.size();
+            pos = (pos + 1) % (long long)seen.size();
         }
         if (duplicate)
             continue;  // try a new random number
@@ -61,7 +89,7 @@ int main(int argc, char *argv[])
     // Write the rows to "dataset_<n>.csv".
     string filename = "dataset_" + to_string(n) + ".csv";
     ofstream out(filename);
-    for (int i = 0; i < n; i++)
+    for (long long i = 0; i < n; i++)
     {
         out << keys[i] << "," << strs[i] << "\n";
     }
