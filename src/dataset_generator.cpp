@@ -38,9 +38,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Seed = group leader's student ID after the letter -> digit mapping.
-    // Original ID: 251UC25052
-    //   2=2 5=5 1=1 U=1 C=3 2=2 5=5 0=0 5=5 2=2  ->  2511325052
     mt19937_64 rng(2511325052ULL);
 
     // Storage for the rows we'll output.
