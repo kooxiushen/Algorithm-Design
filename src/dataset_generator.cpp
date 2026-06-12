@@ -21,6 +21,7 @@
 #include <vector>
 #include <random>
 #include <string>
+#include <filesystem>
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -83,8 +84,9 @@ int main(int argc, char *argv[])
         strs.push_back(s);
     }
 
-    // Write the rows to "dataset_<n>.csv".
-    string filename = "dataset_" + to_string(n) + ".csv";
+    // Write the rows to "dataset/dataset_<n>.csv" (create folder if missing).
+    filesystem::create_directories("dataset");
+    string filename = "dataset/dataset_" + to_string(n) + ".csv";
     ofstream out(filename);
     for (long long i = 0; i < n; i++)
     {
