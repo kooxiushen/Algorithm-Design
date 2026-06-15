@@ -4,22 +4,11 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <chrono>
 
 using namespace std;
 
 typedef pair<unsigned long long, string> HeapNode;
-
-
-
-//TODO: Get root node
-//TODO: Get parent node
-//TODO: Get left child
-//TODO: Get right child
-//TODO: heap_delete
-//TODO: heap_insert
-//TODO: Heapify
-//TODO: Print Runtime
-//TODO: Create heap_sort_dataset_n.csv
 
 void heapify(vector<HeapNode>&, int , int);
 
@@ -71,7 +60,7 @@ void heapify(vector<HeapNode>& arr, int n, int i){
 
 
 int main() {
-    ifstream file("dataset_20.csv");
+    ifstream file("dataset_30.csv");
     if (!file.is_open()) {
         cerr << "Error: Could not open the file." << endl;
         return 1;
@@ -95,14 +84,41 @@ int main() {
     cout << "Key: " << dataVect[i].first << " | Value: " << dataVect[i].second << endl;
     }
 
+    // Start the timer
+    auto start = chrono::high_resolution_clock::now();
+  
+    //Sort the Data Set
     heapSort(dataVect);
+
+    // Stop the timer
+    auto end = chrono::high_resolution_clock::now();
+
+    // Calculate the duration in milliseconds
+    chrono::duration<double, milli> runtime = end - start;
+    cout << "\nRuntime: " << runtime.count() << " ms" << endl;
 
     cout<<endl<<"After sorting"<<endl;
 
 
     //Print the result array
-    for (int i = 0;i < dataVect.size()|| i < 20; i++) {
+    for (int i = 0;i < 10; i++) {
     cout << "Key: " << dataVect[i].first << " | Value: " << dataVect[i].second << endl;
+    }
+
+
+    //TODO: Generate a new 
+        // Construct the filename using the vector size
+    string outFileName = "heap_sort_dataset_" + to_string(dataVect.size()) + ".csv";
+    ofstream outFile(outFileName);
+
+    if (outFile.is_open()) {
+        for (int i = 0; i < dataVect.size(); i++) {
+            outFile << dataVect[i].first << "," << dataVect[i].second << "\n";
+        }
+        outFile.close();
+        cout << "\nSuccess: Sorted data saved to " << outFileName << endl;
+    } else {
+        cerr << "Error: Could not create output file." << endl;
     }
 
     return 0;
