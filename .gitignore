@@ -68,3 +68,11 @@ vcpkg_installed/
 Testing/
 .cache/
 .DS_Store
+
+# generated datasets and results (too big for git; share via OneDrive)
+data/
+results/
+dataset_*.csv
+*_sorted_dataset_*.csv
+hash_table_search_dataset_*.txt
+*_step_*.txt
