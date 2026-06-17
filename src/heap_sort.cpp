@@ -1,125 +1,123 @@
-//Heap_Sort
-#include <iostream>
-#include <vector>
-#include <fstream>
-#include <sstream>
-#include <map>
-#include <chrono>
+// *********************************************************
+// Program: heap_sort.cpp
+// Course: CCP6214 Algorithm Design and Analysis
+// Lecture Class: TC4L
+// Tutorial Class: T13L
+// Trimester: 2610
+// Member_1: 242UC244M6  | YAP HUI CHI         | YAP.HUI.CHI@STUDENT.MMU.EDU.MY        | 0163225726
+// Member_2: 243UC247CQ  | ERIC CHIN YAN HONG  | ERIC.CHIN.YAN.HONG@STUDENT.MMU.EDU.MY | 0168262342
+// Member_3: 251UC25052  | KOO XIU SHEN        | KOO.XIU.SHEN@STUDENT.MMU.EDU.MY       | 01140454502
+// *********************************************************
+//
+// In-place max-heap sort, ascending by the 10-digit integer key.
+// The 5-letter string is carried along as payload.
+//
+// Compile: g++ -std=c++17 -O2 heap_sort.cpp -o heap_sort
+// Usage:   ./heap_sort <input_csv>
+// Example: ./heap_sort dataset_1000.csv
+// Output:  heap_sorted_<input_csv>  (in the current directory)
 
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <chrono>
 using namespace std;
 
 typedef pair<unsigned long long, string> HeapNode;
 
-void heapify(vector<HeapNode>&, int , int);
+void heapify(vector<HeapNode> &, long long, long long);
 
-void swapNodes(HeapNode& a, HeapNode& b){
-  HeapNode temp = a;
-  a = b;
-  b = temp;
+void swapNodes(HeapNode &a, HeapNode &b)
+{
+    HeapNode temp = a;
+    a = b;
+    b = temp;
 }
 
-void heapSort(vector<HeapNode>& arr){
-  int maxHeapSize = arr.size();
+void heapSort(vector<HeapNode> &arr)
+{
+    long long maxHeapSize = (long long)arr.size();
 
-  //Initializing the heapsort from the last parent with last leaf node and going back one by one
-  for(int i = maxHeapSize/2 -1; i>=0; i--){
-    heapify(arr, maxHeapSize, i);
-  }
+    // Build the max-heap: sift down from the last parent back to the root.
+    for (long long i = maxHeapSize / 2 - 1; i >= 0; i--)
+        heapify(arr, maxHeapSize, i);
 
-  //Extract element from heap
-  for(int i = maxHeapSize -1;i>0;i--){
-    //Move largest value into the end of the arr
-    swapNodes(arr[0],arr[i]);
-
-    //call maxheap function to reduce the heap.
-    heapify(arr,i,0);
-
-  }
-
+    // Repeatedly move the largest (root) to the end, shrink, re-heapify.
+    for (long long i = maxHeapSize - 1; i > 0; i--)
+    {
+        swapNodes(arr[0], arr[i]);
+        heapify(arr, i, 0);
+    }
 }
 
+void heapify(vector<HeapNode> &arr, long long n, long long i)
+{
+    long long parent = i; // index of the largest of the three
+    long long leftChild = 2 * i + 1;
+    long long rightChild = 2 * i + 2;
 
-void heapify(vector<HeapNode>& arr, int n, int i){
-  int parent = i; //largest
-  int leftChild = 2*i +1;
-  int rightChild = 2*i +2;
-
-  if(leftChild < n && arr[leftChild].first > arr[parent].first){
-    parent = leftChild;
-  }
-  if(rightChild < n && arr[rightChild].first > arr[parent].first){
-    parent = rightChild;
-  }
-  if(parent != i){
-    swapNodes(arr[i], arr[parent]);
-
-    heapify(arr, n, parent);
-  }
+    if (leftChild < n && arr[leftChild].first > arr[parent].first)
+        parent = leftChild;
+    if (rightChild < n && arr[rightChild].first > arr[parent].first)
+        parent = rightChild;
+    if (parent != i)
+    {
+        swapNodes(arr[i], arr[parent]);
+        heapify(arr, n, parent);
+    }
 }
 
-
-
-int main() {
-    ifstream file("dataset_30.csv");
-    if (!file.is_open()) {
-        cerr << "Error: Could not open the file." << endl;
+int main(int argc, char *argv[])
+{
+    if (argc < 2)
+    {
+        cerr << "Usage: " << argv[0] << " <input_csv>\n";
         return 1;
     }
 
-    vector<HeapNode> dataVect;
+    string in_name = argv[1];
+    ifstream in(in_name);
+    if (!in)
+    {
+        cerr << "Error: cannot open " << in_name << "\n";
+        return 1;
+    }
+
+    // Read CSV: each line is "<10-digit int>,<5-letter string>".
+    // Read BEFORE the timer starts (I/O is excluded from timing).
+    vector<HeapNode> data;
     string line;
-
-    while (getline(file, line)) {
-        stringstream ss(line);
-        string keyStr, value;
-
-        if (getline(ss, keyStr, ',') && getline(ss, value)) {
-            unsigned long long key = stoull(keyStr);
-            dataVect.push_back({key, value}); // Insert directly into vector
-        }
+    while (getline(in, line))
+    {
+        if (line.empty()) continue;
+        size_t comma = line.find(',');
+        if (comma == string::npos) continue;
+        unsigned long long k = stoull(line.substr(0, comma));
+        string s = line.substr(comma + 1);
+        data.push_back({k, s});
     }
-    file.close();
+    in.close();
+    long long n = (long long)data.size();
 
-    for (int i = 0;i < dataVect.size() || i < 20; i++) {
-    cout << "Key: " << dataVect[i].first << " | Value: " << dataVect[i].second << endl;
-    }
+    // --- Time only the sort ---
+    auto t_start = chrono::high_resolution_clock::now();
+    heapSort(data);
+    auto t_end = chrono::high_resolution_clock::now();
+    double seconds = chrono::duration<double>(t_end - t_start).count();
+    // --- End of timed section ---
 
-    // Start the timer
-    auto start = chrono::high_resolution_clock::now();
-  
-    //Sort the Data Set
-    heapSort(dataVect);
+    // Build output filename: "heap_sorted_<basename of input>" in the current dir.
+    size_t slash = in_name.find_last_of("/\\");
+    string base = (slash == string::npos) ? in_name : in_name.substr(slash + 1);
+    string out_name = "heap_sorted_" + base;
 
-    // Stop the timer
-    auto end = chrono::high_resolution_clock::now();
+    ofstream out(out_name);
+    for (long long i = 0; i < n; i++)
+        out << data[i].first << "," << data[i].second << "\n";
+    out.close();
 
-    // Calculate the duration in milliseconds
-    chrono::duration<double, milli> runtime = end - start;
-    cout << "\nRuntime: " << runtime.count() << " ms" << endl;
-
-    cout<<endl<<"After sorting"<<endl;
-
-
-    //Print the result array
-    for (int i = 0;i < 10; i++) {
-    cout << "Key: " << dataVect[i].first << " | Value: " << dataVect[i].second << endl;
-    }
-
-
-    //TODO: Generate a new 
-        // Construct the filename using the vector size
-    string outFileName = "heap_sort_dataset_" + to_string(dataVect.size()) + ".csv";
-    ofstream outFile(outFileName);
-
-    if (outFile.is_open()) {
-        for (int i = 0; i < dataVect.size(); i++) {
-            outFile << dataVect[i].first << "," << dataVect[i].second << "\n";
-        }
-        outFile.close();
-        cout << "\nSuccess: Sorted data saved to " << outFileName << endl;
-    } else {
-        cerr << "Error: Could not create output file." << endl;
-    }
-
+    cout << "Sorted " << n << " rows in " << seconds << " seconds.\n";
+    cout << "Output: " << out_name << endl;
     return 0;
 }
