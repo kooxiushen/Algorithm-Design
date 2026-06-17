@@ -20,13 +20,15 @@ All 7 programs now exist and compile. The current branch is usually `Testing` �
 `hash-table`). Because the lanes were written independently, their conventions have
 **drifted** — see "Cross-lane inconsistencies" below before assuming all 7 behave alike.
 
+Note the source tree is **split into two subfolders** — `src/dataset/` and `src/sorting/` — not a flat `src/`. Paths below reflect the actual layout.
+
 | Path | Status |
 |---|---|
-| `src/dataset_generator.cpp` | ✅ implemented; writes `dataset_<n>.csv` to the **current dir** |
-| `src/radix_sort.cpp`, `radix_sort_step.cpp` | ✅ implemented; take CLI args, write into a `result/` subfolder (uses `<filesystem>`) |
-| `src/heap_sort.cpp`, `heap_sort_step.cpp` | ✅ implemented, but **take no CLI args** — input `dataset_30.csv` and the step row range are hardcoded |
-| `src/hash_table_search.cpp`, `hash_table_search_step.cpp` | ✅ implemented; take a CSV arg, write `.txt` to the current dir |
-| `RUN.md` | Worked end-to-end example for the radix lane. Note: it describes a `dataset/` output folder that `dataset_generator.cpp` does **not** actually create (it writes to cwd) — RUN.md is partly aspirational |
+| `src/dataset/dataset_generator.cpp` | ✅ implemented; takes `<n>`, writes `dataset_<n>.csv` to the **current dir** |
+| `src/sorting/radix_sort.cpp`, `radix_sort_step.cpp` | ✅ implemented; take CLI args, write into a `result/` subfolder (uses `<filesystem>`) |
+| `src/sorting/heap_sort.cpp`, `heap_sort_step.cpp` | ✅ implemented; **now take CLI args too** — `heap_sort <input_csv>`, `heap_sort_step <input_csv> <start> <end>`. Write `.csv`/`.txt` to the **current dir** (no `result/` subfolder) |
+| `src/sorting/hash_table_search.cpp`, `hash_table_search_step.cpp` | ✅ implemented; take a CSV arg, write `.txt` to the current dir |
+| `DEMO.md` | The single Windows/PowerShell run guide. Compiles all 7 (correct `src/dataset/` + `src/sorting/` paths), walks each program on `dataset_1000.csv` with **verified** console output (timing shown as a `<elapsed>` placeholder), then runs across all 10 sizes with a blank results table. This is the only run guide — `RUN.md` and `REPORT_RUN_WINDOWS.md` were removed as duplicates |
 | `report.docx` | Written separately outside this repo |
 | `planning_docs/` | Only `demo_hash_search.md` is tracked here. The assignment **PDF and `planning_pro.md` are NOT in git** (local-only / OneDrive) — they may be absent from your worktree |
 | `sample/` | **Not in the `Testing`/`main` worktree** — lives on the separate `sample` branch (`origin/sample`). Holds reference step-trace outputs for byte-for-byte verification |
@@ -44,15 +46,17 @@ Output filenames are dictated by the PDF and **must match exactly** — see `pla
 
 ## Cross-lane inconsistencies (important — verify before assuming)
 
-The three lanes were authored separately and have **not** been reconciled into one
-convention. When working across programs, do not assume uniform behaviour:
+The three lanes were authored separately and have only **partly** been reconciled.
+The CLI-args drift is now gone (all programs take `argv`), but two differences remain.
+When working across programs, do not assume fully uniform behaviour:
 
-- **CLI args:** `radix_sort`/`radix_sort_step` and `hash_table_search`/`_step` read the
-  input path (and row range) from `argv`. **`heap_sort`/`heap_sort_step` take no args** —
-  `int main()` with input `dataset_30.csv` and step range hardcoded inside.
-- **Output location:** only the radix lane creates a `result/` subfolder (via
-  `filesystem::create_directories`). `dataset_generator`, `heap_sort`, and the hash
-  programs write to the **current working directory**.
+- **CLI args (now uniform):** all programs read from `argv`. `dataset_generator <n>`;
+  `radix_sort`/`heap_sort`/`hash_table_search <input_csv>`; the `_step` variants take
+  `<input_csv> <start_row> <end_row>` (hash `_step` takes just `<input_csv>`). The heap
+  lane was **rewritten** — it no longer hardcodes `dataset_30.csv` or uses `int main()`.
+- **Output location (still split):** only the radix lane creates a `result/` subfolder
+  (via `filesystem::create_directories`). `dataset_generator`, `heap_sort`/`heap_sort_step`,
+  and the hash programs write to the **current working directory**.
 - **`<filesystem>` dependency:** the radix programs `#include <filesystem>`, so
   `-std=c++17` is mandatory for them (not just nice-to-have).
 
@@ -64,9 +68,9 @@ silently picking one.
 
 - **Each `.cpp` is self-contained.** No helper headers, no shared `common/` folder. The 7 programs duplicate small bits of CSV read/write rather than share — this is intentional, makes each file easy to compile alone and easy to defend in the demo Q&A.
 - **`using namespace std;` is used** in every `.cpp` (no `std::` prefixes).
-- **Course/member header block at the top of every `.cpp`** — see `src/dataset_generator.cpp` for the exact format. Required by PDF §F.1.a.
+- **Course/member header block at the top of every `.cpp`** — see `src/dataset/dataset_generator.cpp` for the exact format. Required by PDF §F.1.a.
 - **`long long` for `n` and positions** — `int` overflows at large input sizes the assignment expects.
-- **Hand-roll uniqueness tracking** — see the `seen` vector + linear probing pattern in `src/dataset_generator.cpp`. Do not use `std::unordered_set` (see hard constraint below).
+- **Hand-roll uniqueness tracking** — see the `seen` vector + linear probing pattern in `src/dataset/dataset_generator.cpp`. Do not use `std::unordered_set` (see hard constraint below).
 
 ## Hard constraints (from the PDF — read before coding)
 
@@ -80,16 +84,19 @@ silently picking one.
 
 ## Build
 
-Each `.cpp` is a standalone program. No Makefile. Build from inside `src/` (where
-`RUN.md`'s worked example assumes you are), or pass the `src/` path explicitly.
+Each `.cpp` is a standalone program. No Makefile. The sources live under
+`src/dataset/` and `src/sorting/`. Compile each where it sits, or `cd` into the folder
+first. `DEMO.md` has the full, verified Windows/PowerShell build-and-run walkthrough.
 
 ```bash
 cd src
-g++ -std=c++17 -O2 dataset_generator.cpp -o dataset_generator
-# ...same pattern for radix_sort.cpp, heap_sort.cpp, hash_table_search.cpp, etc.
-./dataset_generator 1000        # → dataset_1000.csv in the current directory
-./radix_sort dataset_1000.csv   # → result/radix_sorted_dataset_1000.csv
-./heap_sort                     # NO args — reads hardcoded dataset_30.csv
+g++ -std=c++17 -O2 dataset/dataset_generator.cpp -o dataset_generator
+g++ -std=c++17 -O2 sorting/radix_sort.cpp        -o radix_sort
+g++ -std=c++17 -O2 sorting/heap_sort.cpp         -o heap_sort
+# ...same pattern for radix_sort_step, heap_sort_step, hash_table_search(_step)
+./dataset_generator 1000             # → dataset_1000.csv in the current directory
+./radix_sort dataset_1000.csv        # → result/radix_sorted_dataset_1000.csv
+./heap_sort dataset_1000.csv         # → heap_sorted_dataset_1000.csv (cwd, no result/)
 ```
 
 `-std=c++17` is required (radix programs use `<filesystem>`). `-O2` is required — without
@@ -123,7 +130,7 @@ Work is split into 3 lanes, one per member:
 - `Testing` — integration branch where the lane branches are merged together (often the checked-out branch)
 - `sample` — holds the `sample/` reference-output tree, kept separate from code branches
 
-If asked to implement code, check the current branch name to infer which lane you're in. Don't write across lanes without confirming with the user. Changes to `src/dataset_generator.cpp` likely need to land on `main` first, then be merged into the algorithm branches.
+If asked to implement code, check the current branch name to infer which lane you're in. Don't write across lanes without confirming with the user. Changes to `src/dataset/dataset_generator.cpp` likely need to land on `main` first, then be merged into the algorithm branches.
 
 ## File-extension contract (don't get this wrong)
 
