@@ -14,7 +14,6 @@
 //
 // Compile: g++ -std=c++17 -O2 dataset_generator.cpp -o dataset_generator
 // Usage:   ./dataset_generator <n>
-// Example: ./dataset_generator 1000000
 
 #include <iostream>
 #include <fstream>

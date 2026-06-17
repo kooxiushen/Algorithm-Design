@@ -76,3 +76,5 @@ dataset_*.csv
 *_sorted_dataset_*.csv
 hash_table_search_dataset_*.txt
 *_step_*.txt
+data/*.csv
+data/*.txt
