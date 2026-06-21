@@ -49,7 +49,8 @@ int main(int argc, char *argv[])
     string line;
     while (getline(in, line))
     {
-        if (line.empty()) continue;
+        if (line.empty())
+            continue;
         size_t comma = line.find(',');
         long long k = stoll(line.substr(0, comma));
         string s = line.substr(comma + 1);
@@ -71,14 +72,16 @@ int main(int argc, char *argv[])
     for (int pass = 0; pass < 10; pass++)
     {
         // Count how many keys have each digit (0..9) at this position.
-        for (int i = 0; i < 10; i++) count[i] = 0;
+        for (int i = 0; i < 10; i++)
+            count[i] = 0;
         for (long long i = 0; i < n; i++)
         {
             int d = (int)((keys[i] / divisor) % 10);
             count[d]++;
         }
         // Prefix sum -> ending positions of each bucket.
-        for (int i = 1; i < 10; i++) count[i] += count[i - 1];
+        for (int i = 1; i < 10; i++)
+            count[i] += count[i - 1];
         // Stable distribution: walk right-to-left, place each into its bucket.
         for (long long i = n - 1; i >= 0; i--)
         {
