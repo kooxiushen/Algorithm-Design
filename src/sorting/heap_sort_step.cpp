@@ -9,16 +9,11 @@
 // Member_3: 251UC25052  | KOO XIU SHEN        | KOO.XIU.SHEN@STUDENT.MMU.EDU.MY       | 01140454502
 // *********************************************************
 //
-// Same in-place max-heap sort as heap_sort.cpp, but operates on rows
-// [start_row, end_row] of the input (1-indexed, inclusive) and writes
-// the array state after the heap build and after each extract-max swap
-// to a .txt file. Used to verify algorithm correctness against the
-// PDF samples.
+// Max-heap sort on rows [start,end]; traces the array after build and each extract.
 //
 // Compile: g++ -std=c++17 -O2 heap_sort_step.cpp -o heap_sort_step
 // Usage:   ./heap_sort_step <input_csv> <start_row> <end_row>
-// Example: ./heap_sort_step dataset_1000.csv 1 7
-// Output:  <input_basename_without_ext>_heap_sorted_step_<start>_<end>.txt
+// Output:  <basename>_heap_sorted_step_<start>_<end>.txt
 
 #include <iostream>
 #include <fstream>
@@ -30,7 +25,7 @@ typedef pair<unsigned long long, string> HeapNode;
 
 void heapify(vector<HeapNode> &, long long, long long);
 
-// Print "[k1/s1, k2/s2, ...] <label>" on one line.
+// Print "[k1/s1, k2/s2, ...] label" on one line.
 void print_state(ofstream &out, const vector<HeapNode> &arr, const string &label)
 {
     out << "[";
@@ -53,12 +48,12 @@ void heapSort(vector<HeapNode> &arr, ofstream &stepFile)
 {
     long long maxHeapSize = (long long)arr.size();
 
-    // Build the max-heap, then record the initial heap state.
+    // Build the max-heap, then record the initial state.
     for (long long i = maxHeapSize / 2 - 1; i >= 0; i--)
         heapify(arr, maxHeapSize, i);
     print_state(stepFile, arr, "initial");
 
-    // Each extract-max: move root to the end, shrink, re-heapify, record.
+    // Extract max each step, then record.
     for (long long i = maxHeapSize - 1; i > 0; i--)
     {
         swapNodes(arr[0], arr[i]);
@@ -69,7 +64,7 @@ void heapSort(vector<HeapNode> &arr, ofstream &stepFile)
 
 void heapify(vector<HeapNode> &arr, long long n, long long i)
 {
-    long long parent = i; // index of the largest of the three
+    long long parent = i;
     long long leftChild = 2 * i + 1;
     long long rightChild = 2 * i + 2;
 
@@ -108,7 +103,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Read only rows [start_row, end_row] (1-indexed, inclusive).
+    // Read only rows [start_row, end_row] (1-indexed).
     vector<HeapNode> data;
     string line;
     long long row = 0;
@@ -131,7 +126,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Build output filename: "<basename_without_.csv>_heap_sorted_step_<s>_<e>.txt".
+    // Output filename.
     size_t slash = in_name.find_last_of("/\\");
     string base = (slash == string::npos) ? in_name : in_name.substr(slash + 1);
     if (base.size() >= 4 && base.substr(base.size() - 4) == ".csv")

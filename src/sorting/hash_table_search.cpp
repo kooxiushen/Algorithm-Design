@@ -9,17 +9,8 @@
 // Member_3: 251UC25052  | KOO XIU SHEN        | KOO.XIU.SHEN@STUDENT.MMU.EDU.MY       | 01140454502
 // *********************************************************
 //
-// Reads dataset_<n>.csv, builds a hash table (linear probing) on the
-// integer key, then measures the running time of the search operation
-// for the best, average and worst cases.
-//
-// A single search is too fast to measure, so each case performs n
-// searches (n = number of rows in the dataset). Only the search loop
-// is timed; reading the file and building the table are excluded.
-//
-//   Best case    : search a key that sits in its home slot (no probing).
-//   Average case : search every key in the dataset once.
-//   Worst case   : search the key with the longest probe sequence.
+// Hash table (linear probing) on the integer key; times the search
+// operation for the best, average and worst cases (n searches each).
 //
 // Compile: g++ -std=c++17 -O2 hash_table_search.cpp -o hash_table_search
 // Usage:   ./hash_table_search <dataset_file.csv>
@@ -31,14 +22,13 @@
 #include <chrono>
 using namespace std;
 
-// Return the smallest prime number that is >= x.
-// A prime table size spreads the keys out more evenly.
+// Smallest prime >= x (spreads keys more evenly).
 long long nextPrime(long long x)
 {
     if (x <= 2)
         return 2;
     if (x % 2 == 0)
-        x++; // primes above 2 are odd
+        x++;
     while (true)
     {
         bool isPrime = true;
@@ -58,14 +48,13 @@ long long nextPrime(long long x)
 
 int main(int argc, char *argv[])
 {
-    // Basic input check.
     if (argc < 2)
     {
         cerr << "Usage: " << argv[0] << " <dataset_file.csv>\n";
         return 1;
     }
 
-    // ----- Read the dataset into memory (this is I/O, NOT timed). -----
+    // Read the dataset (not timed).
     ifstream in(argv[1]);
     if (!in)
     {
@@ -73,15 +62,14 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    vector<long long> keys; // the 10-digit integer of each row
-    vector<string> strs;    // the 5-letter string of each row
+    vector<long long> keys;
+    vector<string> strs;
 
     string line;
     while (getline(in, line))
     {
         if (line.empty())
             continue;
-        // Each line is "<integer>,<string>". Split at the comma.
         size_t comma = line.find(',');
         if (comma == string::npos)
             continue;
@@ -99,9 +87,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // ----- Build the hash table (linear probing). NOT timed. -----
-    // Table size ~2n (load factor ~0.5) and prime for good spreading.
-    // Slot value 0 means "empty" (real keys are >= 1,000,000,000).
+    // Build the table (not timed). Size ~2n prime; slot 0 == empty.
     long long SIZE = nextPrime(2 * n + 1);
     vector<long long> tableKey(SIZE, 0);
     vector<string> tableStr(SIZE);
@@ -115,11 +101,9 @@ int main(int argc, char *argv[])
         tableStr[pos] = strs[i];
     }
 
-    // ----- Find a best-case key and a worst-case key. NOT timed. -----
-    // The probe distance of a key = how many slots we walk from its home
-    // slot before we find it. Distance 0 means it sits in its home slot.
-    long long bestKey = keys[0];  // smallest probe distance (best case)
-    long long worstKey = keys[0]; // largest probe distance (worst case)
+    // Find best-case (shortest probe) and worst-case (longest probe) keys (not timed).
+    long long bestKey = keys[0];
+    long long worstKey = keys[0];
     long long minDist = -1, maxDist = -1;
 
     for (long long i = 0; i < n; i++)
@@ -144,11 +128,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    // sink stops the optimizer from deleting the timed search loops,
-    // since otherwise their results would look unused.
+    // Blocks the optimizer from deleting the timed loops.
     volatile long long sink = 0;
 
-    // ----- BEST CASE: search the best key n times. (TIMED) -----
+    // BEST CASE: search the best key n times. (TIMED)
     auto startBest = chrono::high_resolution_clock::now();
     for (long long i = 0; i < n; i++)
     {
@@ -156,14 +139,14 @@ int main(int argc, char *argv[])
         while (tableKey[pos] != 0)
         {
             if (tableKey[pos] == bestKey)
-                break; // found
+                break;
             pos = (pos + 1) % SIZE;
         }
         sink += pos;
     }
     auto endBest = chrono::high_resolution_clock::now();
 
-    // ----- AVERAGE CASE: search every key in the dataset once. (TIMED) -----
+    // AVERAGE CASE: search every key once. (TIMED)
     auto startAvg = chrono::high_resolution_clock::now();
     for (long long i = 0; i < n; i++)
     {
@@ -172,14 +155,14 @@ int main(int argc, char *argv[])
         while (tableKey[pos] != 0)
         {
             if (tableKey[pos] == key)
-                break; // found
+                break;
             pos = (pos + 1) % SIZE;
         }
         sink += pos;
     }
     auto endAvg = chrono::high_resolution_clock::now();
 
-    // ----- WORST CASE: search the worst key n times. (TIMED) -----
+    // WORST CASE: search the worst key n times. (TIMED)
     auto startWorst = chrono::high_resolution_clock::now();
     for (long long i = 0; i < n; i++)
     {
@@ -187,21 +170,21 @@ int main(int argc, char *argv[])
         while (tableKey[pos] != 0)
         {
             if (tableKey[pos] == worstKey)
-                break; // found
+                break;
             pos = (pos + 1) % SIZE;
         }
         sink += pos;
     }
     auto endWorst = chrono::high_resolution_clock::now();
 
-    (void)sink; // value itself is unimportant; it just blocks optimization
+    (void)sink;
 
-    // ----- Running times in seconds (for the whole batch of n searches). -----
+    // Running times in seconds (whole batch of n searches).
     double bestTime = chrono::duration<double>(endBest - startBest).count();
     double avgTime = chrono::duration<double>(endAvg - startAvg).count();
     double worstTime = chrono::duration<double>(endWorst - startWorst).count();
 
-    // ----- Write the result file and print to the console. -----
+    // Write result file and print.
     string filename = "hash_table_search_dataset_" + to_string(n) + ".txt";
     ofstream out(filename);
     out.setf(ios::fixed);

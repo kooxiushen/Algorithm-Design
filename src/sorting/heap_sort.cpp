@@ -10,12 +10,10 @@
 // *********************************************************
 //
 // In-place max-heap sort, ascending by the 10-digit integer key.
-// The 5-letter string is carried along as payload.
 //
 // Compile: g++ -std=c++17 -O2 heap_sort.cpp -o heap_sort
 // Usage:   ./heap_sort <input_csv>
-// Example: ./heap_sort dataset_1000.csv
-// Output:  heap_sorted_<input_csv>  (in the current directory)
+// Output:  heap_sorted_<input_csv>  (current directory)
 
 #include <iostream>
 #include <fstream>
@@ -39,11 +37,11 @@ void heapSort(vector<HeapNode> &arr)
 {
     long long maxHeapSize = (long long)arr.size();
 
-    // Build the max-heap: sift down from the last parent back to the root.
+    // Build the max-heap.
     for (long long i = maxHeapSize / 2 - 1; i >= 0; i--)
         heapify(arr, maxHeapSize, i);
 
-    // Repeatedly move the largest (root) to the end, shrink, re-heapify.
+    // Extract max: swap root to the end, shrink, re-heapify.
     for (long long i = maxHeapSize - 1; i > 0; i--)
     {
         swapNodes(arr[0], arr[i]);
@@ -53,7 +51,7 @@ void heapSort(vector<HeapNode> &arr)
 
 void heapify(vector<HeapNode> &arr, long long n, long long i)
 {
-    long long parent = i; // index of the largest of the three
+    long long parent = i;
     long long leftChild = 2 * i + 1;
     long long rightChild = 2 * i + 2;
 
@@ -84,8 +82,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Read CSV: each line is "<10-digit int>,<5-letter string>".
-    // Read BEFORE the timer starts (I/O is excluded from timing).
+    // Read CSV (before the timer; I/O excluded).
     vector<HeapNode> data;
     string line;
     while (getline(in, line))
@@ -100,14 +97,13 @@ int main(int argc, char *argv[])
     in.close();
     long long n = (long long)data.size();
 
-    // --- Time only the sort ---
+    // Time only the sort.
     auto t_start = chrono::high_resolution_clock::now();
     heapSort(data);
     auto t_end = chrono::high_resolution_clock::now();
     double seconds = chrono::duration<double>(t_end - t_start).count();
-    // --- End of timed section ---
 
-    // Build output filename: "heap_sorted_<basename of input>" in the current dir.
+    // Output to heap_sorted_<basename> in the current dir.
     size_t slash = in_name.find_last_of("/\\");
     string base = (slash == string::npos) ? in_name : in_name.substr(slash + 1);
     string out_name = "heap_sorted_" + base;
