@@ -64,7 +64,7 @@ reproducible on any machine: re-running `dataset_generator <n>` always yields th
 | 7  | 10,000,000  | `dataset_10000000.csv`  | ~160 MB   | OneDrive                  |
 | 8  | 50,000,000  | `dataset_50000000.csv`  | ~800 MB   | OneDrive                  |
 | 9  | 100,000,000 | `dataset_100000000.csv` | ~1.6 GB   | OneDrive                  |
-| 10 | 200,000,000 | `dataset_200000000.csv` | ~3.2 GB   | OneDrive                  |
+| 10 | 150,000,000 | `dataset_150000000.csv` | ~2.4 GB   | OneDrive                  |
 
 The walkthrough in Section 3 uses **`n = 1000`**: it is small, fast, and matches the
 hardcoded demo key in the hash step program.
@@ -244,7 +244,7 @@ Only the **full** programs are timed; the `*_step` programs are correctness trac
 timings. This one loop runs all 10 sizes in order — generate, then radix / heap / hash:
 
 ```powershell
-foreach ($n in 1000, 10000, 100000, 500000, 1000000, 5000000, 10000000, 50000000, 100000000, 200000000) {
+foreach ($n in 1000, 10000, 100000, 500000, 1000000, 5000000, 10000000, 50000000, 100000000, 150000000) {
     Write-Host "================  n = $n  ================"
     .\dataset_generator.exe  $n
     .\radix_sort.exe         "dataset_$n.csv"
@@ -256,12 +256,12 @@ foreach ($n in 1000, 10000, 100000, 500000, 1000000, 5000000, 10000000, 50000000
 Each size prints the same blocks as Section 3 (the `Wrote …`, `Sorted … in … seconds.`,
 `Output: …`, and the three hash time lines).
 
-> ⚠️ Sizes 6–10 are large CSVs (~80 MB → ~3.2 GB; n=200M needs ~10 GB RAM and the file
+> ⚠️ Sizes 6–10 are large CSVs (~80 MB → ~2.4 GB; n=150M needs ~7–8 GB RAM and the file
 > belongs on OneDrive, not in git). If your machine can't hold them, trim the size list
 > in the loop above to where it's comfortable.
 
 Real measured numbers from one run (MSYS2 g++ 14.2, `-O2`). Rows 1–7 are actual output;
-rows 8–10 (multi-GB, ~10 GB RAM) were not run here — fill them from your own machine.
+rows 8–10 (multi-GB, up to ~7–8 GB RAM) were not run here — fill them from your own machine.
 **Your numbers will differ; the growth pattern is what matters.**
 
 | n           | Radix (s) | Heap (s) | Hash best (s) | Hash avg (s) | Hash worst (s) |
@@ -275,7 +275,7 @@ rows 8–10 (multi-GB, ~10 GB RAM) were not run here — fill them from your own
 | 10,000,000  | 0.914481  | 9.80834  | 0.002508      | 0.192881     | 1.806129       |
 | 50,000,000  |           |          |               |              |                |
 | 100,000,000 |           |          |               |              |                |
-| 200,000,000 |           |          |               |              |                |
+| 150,000,000 |           |          |               |              |                |
 
 ---
 

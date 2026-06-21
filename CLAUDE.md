@@ -30,7 +30,7 @@ Note the source tree is **split into two subfolders** — `src/dataset/` and `sr
 | `src/sorting/hash_table_search.cpp`, `hash_table_search_step.cpp` | ✅ implemented; take a CSV arg, write `.txt` to the current dir |
 | `DEMO.md` | The single Windows/PowerShell run guide. Compiles all 7 (correct `src/dataset/` + `src/sorting/` paths), walks each program on `dataset_1000.csv` with **verified** console output (timing shown as a `<elapsed>` placeholder), then runs across all 10 sizes with a blank results table. This is the only run guide — `RUN.md` and `REPORT_RUN_WINDOWS.md` were removed as duplicates |
 | `report.docx` | Written separately outside this repo |
-| `planning_docs/` | Only `demo_hash_search.md` is tracked here. The assignment **PDF and `planning_pro.md` are NOT in git** (local-only / OneDrive) — they may be absent from your worktree |
+| `planning_docs/` | Holds `CCP6214_Assignment.pdf` (the authoritative spec — **read it directly**), plus `planning_pro.md` and `PLANNING.md`. **Always ignore `planning_pro.md` and `PLANNING.md`** — they are stale first-pass plans that drift from the code; never cite or rely on them. The PDF is the only source of truth here |
 | `sample/` | **Not in the `Testing`/`main` worktree** — lives on the separate `sample` branch (`origin/sample`). Holds reference step-trace outputs for byte-for-byte verification |
 
 ## The 7 programs (target deliverables)
@@ -42,7 +42,7 @@ Note the source tree is **split into two subfolders** — `src/dataset/` and `sr
 | `heap_sort` / `heap_sort_step` | Maxheap, in-place. `_step` traces after each extract-max swap |
 | `hash_table_search` / `hash_table_search_step` | Open-addressing hash table with linear probing. Full version times n searches (best/avg/worst); `_step` traces one probe path |
 
-Output filenames are dictated by the PDF and **must match exactly** — see `planning_docs/CCP6214_Assignment.pdf` §D (if present locally) and the `sample` branch's `sample/results/` for examples.
+Output filenames are dictated by the PDF and **must match exactly** — see `planning_docs/CCP6214_Assignment.pdf` §D and the `sample` branch's `sample/results/` for examples.
 
 ## Cross-lane inconsistencies (important — verify before assuming)
 
@@ -146,5 +146,5 @@ PDF §F.4, §I.2 require a single OneDrive folder link in the report for big fil
 
 - Edit existing `.cpp` files in place; don't create headers or `common/` folders — the group agreed against that pattern.
 - The report is written outside this repo; don't try to draft or scaffold it here.
-- If the user asks about assignment requirements, `planning_docs/CCP6214_Assignment.pdf` is authoritative — but it is **not tracked in git**, so it may be missing from your worktree; ask the user for it rather than guessing. Plans summarize but may drift.
-- Open tutor questions (e.g. the `unordered_set`/`unordered_map` ban above) were tracked in `planning_docs/planning_pro.md`, which is also not in git. Treat such questions as unresolved until the user confirms an answer.
+- If the user asks about assignment requirements, `planning_docs/CCP6214_Assignment.pdf` is authoritative — read it directly (it is in the repo). **Always ignore `planning_docs/planning_pro.md` and `planning_docs/PLANNING.md`** — they are stale planning drafts that drift from the actual code; do not cite or rely on them.
+- Open tutor questions (e.g. the `unordered_set`/`unordered_map` ban above) are unresolved until the user confirms an answer — treat them as open regardless of what the stale planning docs say.
