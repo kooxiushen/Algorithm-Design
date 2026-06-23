@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 University group assignment: **CCP6214 Algorithm Design & Analysis (MMU)**. Worth 40%, due 22 June 2026. The deliverable is a `.docx` report plus seven small C++ programs.
 
-**Group (3 members):**
+**Group (3 members):** Lecture section **TC6L**, Tutorial section **T22L**, Group **8** (submission zip `T22L_G08.zip`).
 - YAP HUI CHI — `242UC244M6`
 - ERIC CHIN YAN HONG — `243UC247CQ`
 - KOO XIU SHEN — `251UC25052` *(group leader → RNG seed source)*

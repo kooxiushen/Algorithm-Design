@@ -1,8 +1,8 @@
 // *********************************************************
 // Program: radix_sort.cpp
 // Course: CCP6214 Algorithm Design and Analysis
-// Lecture Class: TC4L
-// Tutorial Class: T13L
+// Lecture Class: TC6L
+// Tutorial Class: T22L
 // Trimester: 2610
 // Member_1: 242UC244M6  | YAP HUI CHI         | YAP.HUI.CHI@STUDENT.MMU.EDU.MY        | 0163225726
 // Member_2: 243UC247CQ  | ERIC CHIN YAN HONG  | ERIC.CHIN.YAN.HONG@STUDENT.MMU.EDU.MY | 0168262342
